@@ -1,0 +1,42 @@
+####################################
+# Port & Project Name
+####################################
+server:
+  port: 2468                    # ?? ??
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: /StockCoin
+
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+  ####################################
+  # MySQL ??
+  ####################################
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3307/StockCoin
+    username: root
+    password: 1111
+
+  ####################################
+  # JPA ??
+  ####################################
+  jpa:
+    open-in-view: true      #
+    hibernate:
+      ddl-auto: update     # create, update, ...
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy # ?????? ?????? ??
+    show-sql: true          # SQL ?? ??
+    properties:
+      hibernate:
+        format_sql: true    # SQL ??? ??
