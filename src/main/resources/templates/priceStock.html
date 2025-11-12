@@ -6,11 +6,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/price.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 </head>
-<body class="d-flex flex-column min-vh-100">
 
-<!-- ✅ Navbar -->
+<body class="d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
@@ -30,89 +31,82 @@
     </div>
 </nav>
 
-<!-- ✅ Main -->
 <main class="flex-fill container my-5">
-
-    <!-- 상단 탭 -->
     <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-            <a class="nav-link active" href="/priceStock">주식 시세</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/priceCoin">코인 시세</a>
-        </li>
+        <li class="nav-item"><a class="nav-link active" href="/priceStock">주식 시세</a></li>
+        <li class="nav-item"><a class="nav-link" href="/priceCoin">코인 시세</a></li>
     </ul>
 
-    <!-- 검색 및 버튼 + 갱신시각 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="input-group w-50">
             <input type="text" id="searchInput" class="form-control" placeholder="종목명 또는 코드 검색">
             <button class="btn btn-dark" id="searchBtn">검색</button>
         </div>
-
-        <div class="d-flex flex-column align-items-end">
-            <div class="btn-group mb-1">
-                <button class="btn btn-outline-dark" id="sortPriceBtn">가격순</button>
-                <button class="btn btn-outline-dark" id="sortRateBtn">등락률순</button>
-                <button class="btn btn-outline-dark" id="refreshBtn">🔄 새로고침</button>
-            </div>
-            <div class="update-time" id="updateTime">마지막 업데이트: -</div>
+        <div class="text-end">
+            <button class="btn btn-outline-dark" id="refreshBtn">🔄 새로고침</button>
+            <div id="updateTime" class="mt-1 small text-secondary">마지막 업데이트: -</div>
         </div>
     </div>
 
-    <!-- ✅ 로딩 스피너 -->
     <div id="loadingSpinner" class="loading-spinner">
         <div class="spinner-border text-dark" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
-    <!-- ✅ 시세 표 -->
     <table class="table table-hover text-center align-middle" style="display:none;" id="stockTable">
         <thead class="table-dark">
         <tr>
             <th>⭐</th>
             <th>종목명</th>
-            <th>현재가</th>
-            <th>등락률</th>
-            <th>거래량</th>
+            <th class="sortable" data-sort="price">현재가</th>
+            <th class="sortable" data-sort="rate">등락률</th>
+            <th class="sortable" data-sort="volume">거래량</th>
         </tr>
         </thead>
         <tbody id="stockTableBody"></tbody>
     </table>
-
 </main>
 
-<!-- ✅ Footer -->
+<!-- ✅ 차트 모달 -->
+<div class="modal fade" id="chartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="modalTitle">종목 차트</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chartContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="bg-dark text-light text-center py-3 mt-auto">
     <p class="mb-0">© 2025 StockCoin Project</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     let allStocks = [];
-    let sortPriceAsc = true;
-    let sortRateAsc = true;
+    let originalStocks = [];
+    let chartInstance = null;
+    let sortState = { column: null, order: "none" };
 
-    // ✅ 테이블 렌더링 함수
+    // ✅ 표 렌더링
     function renderTable(data) {
       const tableBody = document.getElementById("stockTableBody");
       tableBody.innerHTML = data.map(stock => {
         const rateValue = parseFloat(stock.changeRate.replace(/[^0-9.-]/g, ""));
-        const isUp = stock.changeRate.includes("+") || rateValue > 0;
-        const isDown = stock.changeRate.includes("-") || rateValue < 0;
-
-        let rateColor = "text-secondary";
-        let rateIcon = "";
-        if (isUp) {
-          rateColor = "text-danger fw-bold";
-          rateIcon = "▲ ";
-        } else if (isDown) {
-          rateColor = "text-primary fw-bold";
-          rateIcon = "▼ ";
-        }
+        const isUp = rateValue > 0;
+        const isDown = rateValue < 0;
+        const rateColor = isUp ? "text-danger fw-bold" : isDown ? "text-primary fw-bold" : "text-secondary";
+        const rateIcon = isUp ? "▲ " : isDown ? "▼ " : "";
 
         return `
-          <tr>
+          <tr data-code="${stock.code}" data-name="${stock.name}">
             <td>⭐</td>
             <td class="text-start ps-3">${stock.name}</td>
             <td class="text-end pe-3">${stock.price}</td>
@@ -122,20 +116,117 @@
         `;
       }).join("");
 
-      const rows = tableBody.querySelectorAll("tr");
-      rows.forEach((row, i) => setTimeout(() => row.classList.add("show"), i * 20));
+      document.querySelectorAll("#stockTableBody tr").forEach(row => {
+        row.addEventListener("click", () => showChartModal(row.dataset.name, row.dataset.code));
+      });
     }
 
-    // ✅ 현재 시각 포맷
-    function getCurrentTime() {
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      return `${hh}:${mm}:${ss}`;
+    // ✅ 차트 모달 (기간 버튼 포함)
+    async function showChartModal(name, code) {
+      const modalEl = document.getElementById("chartModal");
+      const modal = new bootstrap.Modal(modalEl);
+      document.getElementById("modalTitle").textContent = `${name} (${code}) 차트`;
+
+      const chartContainer = document.getElementById("chartContainer");
+      chartContainer.innerHTML = `
+        <div class="d-flex justify-content-center mb-3 gap-2">
+          <button class="btn btn-sm btn-outline-dark period-btn active" data-period="1m">1개월</button>
+          <button class="btn btn-sm btn-outline-dark period-btn" data-period="3m">3개월</button>
+          <button class="btn btn-sm btn-outline-dark period-btn" data-period="6m">6개월</button>
+        </div>
+        <canvas id="stockChart" style="height:400px;"></canvas>
+      `;
+
+      const ctx = document.getElementById("stockChart").getContext("2d");
+
+      async function loadChart(period = "1m") {
+        try {
+          const res = await axios.get(`/api/korea/detail/${code}?period=${period}`);
+          const data = res.data;
+
+          if (chartInstance) chartInstance.destroy();
+
+          chartInstance = new Chart(ctx, {
+            data: {
+              labels: data.labels,
+              datasets: [
+                {
+                  type: "line",
+                  label: `${name} 주가`,
+                  data: data.prices,
+                  borderColor: "#007bff",
+                  backgroundColor: "rgba(0,123,255,0.15)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                  yAxisID: "yPrice"
+                },
+                {
+                  type: "bar",
+                  label: "거래량",
+                  data: data.volumes,
+                  backgroundColor: "rgba(180,180,180,0.5)",
+                  yAxisID: "yVolume"
+                }
+              ]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                title: { display: true, text: `${name} (${period}) 주가 & 거래량` }
+              },
+              scales: {
+                yPrice: { position: "left" },
+                yVolume: { position: "right", grid: { drawOnChartArea: false } }
+              }
+            }
+          });
+        } catch (err) {
+          chartContainer.innerHTML = `<p class="text-danger text-center">데이터를 불러올 수 없습니다.</p>`;
+        }
+      }
+
+      chartContainer.addEventListener("click", e => {
+        if (e.target.classList.contains("period-btn")) {
+          document.querySelectorAll(".period-btn").forEach(btn => btn.classList.remove("active"));
+          e.target.classList.add("active");
+          loadChart(e.target.dataset.period);
+        }
+      });
+
+      await loadChart("1m");
+      modal.show();
     }
 
-    // ✅ 데이터 로딩
+    // ✅ 헤더 클릭 정렬 (3단계)
+    document.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("sortable")) return;
+
+      const column = e.target.dataset.sort;
+      let order = "asc";
+      if (sortState.column === column) {
+        if (sortState.order === "asc") order = "desc";
+        else if (sortState.order === "desc") order = "none";
+      }
+      sortState = { column, order };
+
+      let sorted = [];
+      if (order === "none") sorted = [...originalStocks];
+      else {
+        sorted = [...allStocks];
+        const key = { price: "price", rate: "changeRate", volume: "volume" }[column];
+        sorted.sort((a, b) => {
+          const valA = parseFloat(a[key].replace(/[^0-9.-]/g, ""));
+          const valB = parseFloat(b[key].replace(/[^0-9.-]/g, ""));
+          return order === "asc" ? valA - valB : valB - valA;
+        });
+      }
+
+      renderTable(sorted);
+      document.querySelectorAll("th.sortable").forEach(th => th.classList.remove("sorted", "asc", "desc"));
+      if (order !== "none") e.target.classList.add("sorted", order);
+    });
+
     async function loadStockData() {
       const spinner = document.getElementById("loadingSpinner");
       const table = document.getElementById("stockTable");
@@ -143,68 +234,28 @@
 
       spinner.style.display = "flex";
       table.style.display = "none";
-      spinner.style.opacity = "1";
 
       try {
         const res = await axios.get("/api/korea/list");
         allStocks = res.data;
+        originalStocks = [...allStocks];
         renderTable(allStocks);
-
-        spinner.style.opacity = "0";
-        setTimeout(() => {
-          spinner.style.display = "none";
-          table.style.display = "table";
-        }, 300);
-
-        updateTime.textContent = "마지막 업데이트: " + getCurrentTime();
-      } catch (err) {
-        console.error(err);
+        spinner.style.display = "none";
+        table.style.display = "table";
+        updateTime.textContent = "마지막 업데이트: " + new Date().toLocaleTimeString("ko-KR");
+      } catch {
         spinner.innerHTML = `<p class="text-danger">데이터 불러오기 실패</p>`;
       }
     }
 
-    // ✅ 정렬 기능
-    document.getElementById("sortPriceBtn").addEventListener("click", () => {
-      const btn = document.getElementById("sortPriceBtn");
-      const sorted = [...allStocks].sort((a, b) => {
-        const priceA = Number(a.price.replace(/,/g, ""));
-        const priceB = Number(b.price.replace(/,/g, ""));
-        return sortPriceAsc ? priceA - priceB : priceB - priceA;
-      });
-      renderTable(sorted);
-      btn.textContent = sortPriceAsc ? "가격순 ▼" : "가격순 ▲";
-      sortPriceAsc = !sortPriceAsc;
-    });
-
-    document.getElementById("sortRateBtn").addEventListener("click", () => {
-      const btn = document.getElementById("sortRateBtn");
-      const sorted = [...allStocks].sort((a, b) => {
-        const rateA = parseFloat(a.changeRate.replace(/[^0-9.-]/g, ""));
-        const rateB = parseFloat(b.changeRate.replace(/[^0-9.-]/g, ""));
-        return sortRateAsc ? rateA - rateB : rateB - rateA;
-      });
-      renderTable(sorted);
-      btn.textContent = sortRateAsc ? "등락률순 ▼" : "등락률순 ▲";
-      sortRateAsc = !sortRateAsc;
-    });
-
-    // ✅ 검색
     document.getElementById("searchBtn").addEventListener("click", () => {
       const keyword = document.getElementById("searchInput").value.trim();
-      if (!keyword) {
-        renderTable(allStocks);
-        return;
-      }
-      const filtered = allStocks.filter(stock =>
-        stock.name.includes(keyword) || stock.code.includes(keyword)
-      );
+      if (!keyword) return renderTable(allStocks);
+      const filtered = allStocks.filter(s => s.name.includes(keyword) || s.code.includes(keyword));
       renderTable(filtered);
     });
 
-    // ✅ 새로고침
     document.getElementById("refreshBtn").addEventListener("click", loadStockData);
-
-    // ✅ 첫 로드시 실행
     document.addEventListener("DOMContentLoaded", loadStockData);
 </script>
 </body>
