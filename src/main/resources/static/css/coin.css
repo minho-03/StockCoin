@@ -1,0 +1,27 @@
+/* 코인 페이지 전용 스타일 */
+
+/* 차트 모달 크기 조정 */
+#coinChart {
+  width: 100% !important;
+  height: 360px !important;
+}
+.modal-lg {
+  max-width: 850px;
+}
+
+/* 변동률 컬러 */
+.text-danger { color: #d9534f !important; } /* 상승 */
+.text-primary { color: #0275d8 !important; } /* 하락 */
+
+/* 헤더 정렬 표시 */
+th.sortable:hover {
+  background-color: #343a40;
+}
+th.sorted.asc::after {
+  content: " ▲";
+  color: #aaa;
+}
+th.sorted.desc::after {
+  content: " ▼";
+  color: #aaa;
+}

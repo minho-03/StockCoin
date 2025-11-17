@@ -1,0 +1,101 @@
+/* ==============================
+   📊 공통 테이블 스타일 (주식/코인 시세 통합)
+   - 주식 시세 기준으로 완전 통일
+============================== */
+
+/* 전체 테이블 기본 구조 */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  border: 1px solid #dee2e6; /* 전체 외곽선 */
+  background-color: #fff;
+}
+
+/* 헤더 스타일 (다크 테마) */
+.table-dark th {
+  background-color: #212529 !important;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #343a40;
+}
+
+/* 셀 구분선 */
+.table th,
+.table td {
+  border: 1px solid #dee2e6; /* 칸칸이 구분선 */
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  font-size: 15px;
+}
+
+/* ⭐ 첫 번째 열 (즐겨찾기) 중앙 정렬 */
+td:first-child,
+th:first-child {
+  text-align: center !important;
+  width: 60px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 종목명/코인명은 왼쪽 정렬 */
+td:nth-child(2),
+th:nth-child(2) {
+  text-align: left;
+  padding-left: 20px;
+}
+
+/* 가격/등락률/거래량 오른쪽 정렬 */
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5),
+th:nth-child(3),
+th:nth-child(4),
+th:nth-child(5) {
+  text-align: right;
+  padding-right: 20px;
+}
+
+/* hover 시 강조 효과 */
+.table-hover tbody tr {
+  transition: background-color 0.2s;
+}
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* 정렬 가능한 컬럼 */
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+th.sortable:hover {
+  background-color: #343a40;
+}
+th.sorted.asc::after {
+  content: " ▲";
+  color: #aaa;
+}
+th.sorted.desc::after {
+  content: " ▼";
+  color: #aaa;
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+}
+
+/* 작은 화면 대응 */
+@media (max-width: 768px) {
+  th, td {
+    font-size: 13px;
+    padding: 0.5rem;
+  }
+}

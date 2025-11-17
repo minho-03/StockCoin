@@ -1,104 +1,98 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>StockCoin - 코인 시세</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/price.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>StockCoin - 코인 시세</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/priceCommon.css" rel="stylesheet">  <!-- ✅ 공통 -->
+    <link href="/css/coin.css" rel="stylesheet">          <!-- ✅ 개별 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="d-flex flex-column min-vh-100">
-  <!-- ✅ Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
-          <li class="nav-item"><a class="nav-link active" href="/priceStock">시세보기</a></li>
-          <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
-          <li class="nav-item"><a class="nav-link" href="/chat">채팅</a></li>
-          <li class="nav-item"><a class="nav-link" href="/join">회원가입</a></li>
-          <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
 
-  <!-- ✅ Main -->
-  <main class="flex-fill container my-5">
-    <!-- 상단 탭 -->
+<body class="d-flex flex-column min-vh-100">
+
+<!-- ✅ Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
+                <li class="nav-item"><a class="nav-link" href="/priceStock">주식 시세</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/priceCoin">코인 시세</a></li>
+                <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
+                <li class="nav-item"><a class="nav-link" href="/chat">채팅</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ✅ Main -->
+<main class="flex-fill container my-5">
     <ul class="nav nav-tabs mb-4">
-      <li class="nav-item">
-        <a class="nav-link" href="/priceStock">주식 시세</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link active" href="/priceCoin">코인 시세</a>
-      </li>
+        <li class="nav-item"><a class="nav-link" href="/priceStock">주식 시세</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/priceCoin">코인 시세</a></li>
     </ul>
 
-    <!-- 검색창 -->
-    <div class="input-group mb-3">
-      <input type="text" class="form-control" placeholder="코인명 또는 코드 검색">
-      <button class="btn btn-dark">검색</button>
+    <!-- 검색 + 새로고침 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="input-group w-50">
+            <input type="text" id="searchInput" class="form-control" placeholder="코인명 또는 코드 검색">
+            <button class="btn btn-dark" id="searchBtn">검색</button>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-outline-dark" id="refreshBtn">🔄 새로고침</button>
+            <div id="updateTime" class="mt-1 small text-secondary">마지막 업데이트: -</div>
+        </div>
     </div>
 
-    <!-- 시세 표 -->
-    <table class="table table-hover text-center">
-      <thead class="table-dark">
+    <!-- 로딩 스피너 -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner-border text-dark" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- 코인 시세 테이블 -->
+    <table class="table table-hover text-center align-middle" style="display:none;" id="coinTable">
+        <thead class="table-dark">
         <tr>
-          <th>⭐</th>
-          <th>코인명</th>
-          <th>현재가</th>
-          <th>변동률</th>
+            <th>⭐</th>
+            <th>코인명</th>
+            <th class="sortable" data-sort="price">현재가</th>
+            <th class="sortable" data-sort="rate">변동률</th>
+            <th class="sortable" data-sort="volume">거래량</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>⭐</td>
-          <td>BTC</td>
-          <td>96,500,000</td>
-          <td class="text-success">+2.1%</td>
-        </tr>
-        <tr>
-          <td>⭐</td>
-          <td>ETH</td>
-          <td>5,200,000</td>
-          <td class="text-danger">-0.5%</td>
-        </tr>
-      </tbody>
+        </thead>
+        <tbody id="coinTableBody"></tbody>
     </table>
+</main>
 
-    <!-- 차트 -->
-    <div class="chart-container mt-5" style="height: 300px;">
-      <canvas id="coinChart"></canvas>
+<!-- ✅ 차트 모달 -->
+<div class="modal fade" id="chartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="modalTitle">코인 차트</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chartContainer"></div>
+            </div>
+        </div>
     </div>
-  </main>
+</div>
 
-  <!-- ✅ Footer -->
-  <footer class="bg-dark text-light text-center py-3 mt-auto">
+<!-- ✅ Footer -->
+<footer class="bg-dark text-light text-center py-3 mt-auto">
     <p class="mb-0">© 2025 StockCoin Project</p>
-  </footer>
+</footer>
 
-  <!-- ✅ Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const ctx = document.getElementById('coinChart');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['10:00', '10:05', '10:10', '10:15'],
-        datasets: [{
-          label: 'BTC',
-          data: [9800, 10000, 9950, 10100],
-          borderColor: 'green',
-          borderWidth: 2
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/priceCoin.js"></script> <!-- ✅ JS 분리 -->
 </body>
 </html>
