@@ -1,6 +1,9 @@
 ####################################
 # Port & Project Name
 ####################################
+finnhub:
+  api-key: "d4e2q79r01qmhtc6rt5gd4e2q79r01qmhtc6rt60"
+
 server:
   port: 2468                    # ?? ??
   servlet:
@@ -40,3 +43,5 @@ spring:
     properties:
       hibernate:
         format_sql: true    # SQL ??? ??
+
+

@@ -1,0 +1,36 @@
+<!-- templates/fragments/navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" th:fragment="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+
+                <!-- 공통 메뉴 -->
+                <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
+                <li class="nav-item"><a class="nav-link" href="/priceStock">시세보기</a></li>
+                <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
+                <li class="nav-item"><a class="nav-link" href="/chat">채팅</a></li>
+
+                <!-- 로그인 상태에 따라 다른 메뉴 -->
+                <th:block th:if="${session.loginUser == null}">
+                    <li class="nav-item"><a class="nav-link" href="/signup">회원가입</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
+                </th:block>
+
+                <th:block th:if="${session.loginUser != null}">
+                    <li class="nav-item">
+                        <a class="nav-link disabled text-warning">
+                            [[${session.loginUser.nickname}]] 님
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/logout">로그아웃</a></li>
+                </th:block>
+
+            </ul>
+        </div>
+    </div>
+</nav>
