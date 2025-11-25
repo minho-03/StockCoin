@@ -195,3 +195,5 @@ document.getElementById("searchBtn").addEventListener("click", () => {
 });
 document.getElementById("refreshBtn").addEventListener("click", loadCoinData);
 document.addEventListener("DOMContentLoaded", loadCoinData);
+
+

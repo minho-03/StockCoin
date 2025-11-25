@@ -12,33 +12,24 @@ public class MainController {
 	}
 
 
-	@GetMapping("priceStock")
+	@GetMapping("/priceStock")
 	public String priceStock() {
 		return "priceStock";
 	}
 
-	@GetMapping("priceCoin")
+	@GetMapping("/priceCoin")
 	public String priceCoin() {
 		return "priceCoin";
 	}
 
-	@GetMapping("favorites")
+    @GetMapping("/priceUsa")
+    public String priceUsa(){ return "priceUsa"; }
+
+	@GetMapping("/favorites")
 	public String favorites() {
 		return "favorites";
 	}
 
-	@GetMapping("chat")
-	public String chat() {
-		return "chat";
-	}
-
-	@GetMapping("login")
-	public String login() {
-		return "login";
-	}
-
-	@GetMapping("join")
-	public String join() {
-		return "join";
-	}
+	@GetMapping("/chat")
+	public String chat() { return "chat";}
 }

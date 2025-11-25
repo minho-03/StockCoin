@@ -25,3 +25,15 @@ th.sorted.desc::after {
   content: " ▼";
   color: #aaa;
 }
+#usaTable td.text-up {
+  color: #d93025 !important;
+}
+
+#usaTable td.text-down {
+  color: #0070c9 !important;
+}
+
+#usaTable td.text-same {
+  color: #6c757d !important;
+}
+
