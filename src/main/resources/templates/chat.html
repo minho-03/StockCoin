@@ -1,94 +1,125 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>StockCoin - 채팅</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/chat.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>StockCoin - 채팅</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* 전체 채팅 박스 */
+        #chatArea {
+          height: 450px;
+          overflow-y: auto;
+          background: #f8f9fa;
+          border-radius: 10px;
+          padding: 15px;
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* 기본 메시지 박스 */
+        .msg-box {
+          display: flex;
+          margin-bottom: 12px;
+          max-width: 85%;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        /* 상대방 메시지 (왼쪽) */
+        .msg-left { justify-content: flex-start; }
+        .msg-left .bubble {
+          background: #e9ecef;
+          color: #333;
+          border-radius: 12px;
+          padding: 10px 14px;
+          max-width: 80%;
+        }
+
+        /* 내 메시지 (오른쪽) */
+        .msg-right { justify-content: flex-end; margin-left: auto; }
+        .msg-right .bubble {
+          background: #0d6efd;
+          color: white;
+          border-radius: 12px;
+          padding: 10px 14px;
+          max-width: 80%;
+        }
+
+        /* 닉네임 */
+        .sender {
+          font-size: 0.85rem;
+          font-weight: bold;
+          margin-bottom: 3px;
+        }
+
+        /* 시간 */
+        .timestamp {
+          font-size: 0.75rem;
+          margin-top: 3px;
+          opacity: 0.7;
+          text-align: right;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 입력창 둥글게 커스텀 */
+        #messageInput {
+          border-radius: 20px 0 0 20px;
+          padding-left: 15px;
+        }
+
+        #sendBtn {
+          border-radius: 0 20px 20px 0;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
-  <!-- ✅ Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
-          <li class="nav-item"><a class="nav-link" href="/priceStock">시세보기</a></li>
-          <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
-          <li class="nav-item"><a class="nav-link active" href="/chat">채팅</a></li>
-          <li class="nav-item"><a class="nav-link" href="/join">회원가입</a></li>
-          <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
-        </ul>
-      </div>
+        <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
+                <li class="nav-item"><a class="nav-link" href="/priceStock">시세보기</a></li>
+                <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/chat">채팅</a></li>
+                <li class="nav-item"><a class="nav-link" href="/signup">회원가입</a></li>
+                <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
+            </ul>
+        </div>
     </div>
-  </nav>
+</nav>
 
-  <!-- ✅ Main -->
-  <main class="flex-fill container my-5">
+<!-- Main -->
+<main class="flex-fill container my-5">
     <h2 class="mb-4">💬 전체 채팅방</h2>
 
-    <!-- 메시지 영역 -->
-    <div id="chatArea" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto;">
-      <div><strong>user1:</strong> 오늘 BTC 오르네요!</div>
-      <div><strong>user2:</strong> 삼성전자 매수했어요</div>
-      <div><strong>user3:</strong> ETH는 더 떨어질 듯...</div>
-    </div>
+    <div id="chatArea"></div>
 
     <!-- 입력창 -->
-    <div class="input-group">
-      <input id="messageInput" type="text" class="form-control" placeholder="메시지를 입력하세요...">
-      <button id="sendBtn" class="btn btn-dark">전송</button>
+    <div class="input-group mt-3">
+        <input id="messageInput" type="text" class="form-control" placeholder="메시지를 입력하세요...">
+        <button id="sendBtn" class="btn btn-primary">전송</button>
     </div>
-  </main>
+</main>
 
-  <!-- ✅ Footer -->
-  <footer class="bg-dark text-light text-center py-3 mt-auto">
+<!-- Footer -->
+<footer class="bg-dark text-light text-center py-3 mt-auto">
     <p class="mb-0">© 2025 StockCoin Project</p>
-  </footer>
+</footer>
 
-  <!-- ✅ WebSocket & STOMP -->
-  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<!-- WebSocket -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const socket = new SockJS('/ws/chat'); // 엔드포인트(Spring 설정과 동일해야 함)
-      const stompClient = Stomp.over(socket);
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-      const chatArea = document.getElementById("chatArea");
-      const input = document.getElementById("messageInput");
-      const sendBtn = document.getElementById("sendBtn");
-
-      stompClient.connect({}, () => {
-        // 서버에서 메시지 받기
-        stompClient.subscribe('/topic/chat', (msg) => {
-          const message = document.createElement("div");
-          message.textContent = msg.body;
-          chatArea.appendChild(message);
-          chatArea.scrollTop = chatArea.scrollHeight; // 자동 스크롤
-        });
-      });
-
-      // 메시지 전송
-      sendBtn.addEventListener("click", () => {
-        const text = input.value.trim();
-        if (text) {
-          stompClient.send("/app/chat.send", {}, text);
-          input.value = "";
-        }
-      });
-
-      // Enter 키로도 전송
-      input.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") {
-          sendBtn.click();
-        }
-      });
-    });
-  </script>
+<script src="/js/Chat.js"></script>
 </body>
 </html>
