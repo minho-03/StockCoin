@@ -85,12 +85,22 @@
 
     <!-- 최신 채팅 -->
     <h2 class="mt-5 mb-4">💬 최신 채팅</h2>
+
     <div class="list-group">
-        <div class="list-group-item">user1: 오늘 BTC 오르네요!</div>
-        <div class="list-group-item">user2: 삼성전자 매수했어요</div>
-        <div class="list-group-item">user3: ETH는 더 떨어질 듯...</div>
+        <th:block th:each="chat : ${latestChat}">
+            <div class="list-group-item">
+                <strong th:text="${chat.sender}"></strong>:
+                <span th:text="${chat.message}"></span>
+            </div>
+        </th:block>
+
+        <th:block th:if="${#lists.isEmpty(latestChat)}">
+            <div class="list-group-item text-muted">아직 채팅이 없습니다.</div>
+        </th:block>
     </div>
+
     <a href="/chat" class="btn btn-dark mt-3">채팅방으로 가기 →</a>
+
 
 </main>
 
