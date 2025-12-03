@@ -1,5 +1,5 @@
 <!-- templates/fragments/navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" th:fragment="navbar">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" th:fragment="navbar" xmlns:th="">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,11 +22,14 @@
                 </th:block>
 
                 <th:block th:if="${session.loginUser != null}">
-                    <li class="nav-item">
-                        <a class="nav-link disabled text-warning">
-                            [[${session.loginUser.nickname}]] 님
-                        </a>
+                    <li class="nav-item" th:if="${loginUser != null}">
+                        <span class="nav-link" style="color: yellow; font-weight: 600;">👤 [[${loginUser.username}]] 님</span>
                     </li>
+
+                    <li class="nav-item" th:if="${loginUser == null}">
+                        <a class="nav-link" href="/login">로그인</a>
+                    </li>
+
                     <li class="nav-item"><a class="nav-link" href="/logout">로그아웃</a></li>
                 </th:block>
 

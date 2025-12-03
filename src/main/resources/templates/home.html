@@ -2,143 +2,223 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>StockCoin Platform - 홈</title>
-
-    <!-- Bootstrap CSS -->
+    <title>StockCoin - 실시간 주식·코인 시세</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/home.css" rel="stylesheet">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
 
-<!-- ✅ Navbar (프래그먼트 사용) -->
+<!-- Navbar -->
 <th:block th:replace="fragments/navbar :: navbar"></th:block>
 
-<!-- ✅ 메인 컨텐츠 -->
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="hero-title">📈 StockCoin</h1>
+        <p class="hero-subtitle">실시간 주식 & 코인 시세를 한눈에</p>
+        <div class="hero-buttons">
+            <a href="/priceStock" class="btn btn-hero btn-primary">주식 시세 보기</a>
+            <a href="/priceCoin" class="btn btn-hero btn-success">코인 시세 보기</a>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
 <main class="flex-fill container my-5">
 
-    <h2 class="mb-4">오늘의 주요 시세</h2>
-    <div class="row text-center">
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">삼성전자</h5>
-                    <p class="card-text fs-4 fw-bold text-danger">72,300</p>
-                    <small class="text-muted">+0.8%</small>
+    <!-- 오늘의 주요 시세 -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">🔥 오늘의 주요 종목</h2>
+            <small class="text-muted">실시간 업데이트</small>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="price-card card-up">
+                    <div class="card-icon">📊</div>
+                    <h5 class="card-name">삼성전자</h5>
+                    <p class="card-price">72,300원</p>
+                    <small class="card-change text-up">▲ +0.8%</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="price-card card-up">
+                    <div class="card-icon">🚗</div>
+                    <h5 class="card-name">현대차</h5>
+                    <p class="card-price">184,000원</p>
+                    <small class="card-change text-up">▲ +1.3%</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="price-card card-up">
+                    <div class="card-icon">₿</div>
+                    <h5 class="card-name">비트코인</h5>
+                    <p class="card-price">96,500,000원</p>
+                    <small class="card-change text-up">▲ +2.1%</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="price-card card-down">
+                    <div class="card-icon">Ξ</div>
+                    <h5 class="card-name">이더리움</h5>
+                    <p class="card-price">5,200,000원</p>
+                    <small class="card-change text-down">▼ -0.5%</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">현대차</h5>
-                    <p class="card-text fs-4 fw-bold text-danger">184,000</p>
-                    <small class="text-muted">+1.3%</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">BTC</h5>
-                    <p class="card-text fs-4 fw-bold text-success">96,500,000</p>
-                    <small class="text-muted">+2.1%</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">ETH</h5>
-                    <p class="card-text fs-4 fw-bold text-primary">5,200,000</p>
-                    <small class="text-muted">-0.5%</small>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- 실시간 차트 -->
-    <div class="container mt-5">
-        <div class="row">
+    <section class="mb-5">
+        <h2 class="section-title mb-4">📊 실시간 차트</h2>
 
-            <!-- 국내 주식 -->
-            <div class="col-md-6">
-                <h2 class="mb-4">주식 차트</h2>
-                <div class="chart-container" style="position: relative; height: 300px; width: 100%">
-                    <canvas id="stockChart"></canvas>
+        <div class="row g-4">
+            <!-- 주식 차트 -->
+            <div class="col-lg-6">
+                <div class="chart-box">
+                    <div class="chart-header">
+                        <h4>주식 차트</h4>
+                        <span class="badge bg-primary">LIVE</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                    <a href="/priceStock" class="btn btn-outline-dark w-100 mt-3">
+                        국내주식 전체보기 →
+                    </a>
                 </div>
-                <a href="/priceStock" class="btn btn-dark mt-3">국내주식 보러가기 →</a>
-                <a href="/priceUsa" class="btn btn-dark mt-3">해외주식 보러가기 →</a>
             </div>
 
-            <!-- 코인 -->
-            <div class="col-md-6">
-                <h2 class="mb-4">코인 차트</h2>
-                <div class="chart-container" style="position: relative; height: 300px; width: 100%">
-                    <canvas id="coinChart"></canvas>
+            <!-- 코인 차트 -->
+            <div class="col-lg-6">
+                <div class="chart-box">
+                    <div class="chart-header">
+                        <h4>코인 차트</h4>
+                        <span class="badge bg-success">LIVE</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="coinChart"></canvas>
+                    </div>
+                    <a href="/priceCoin" class="btn btn-outline-dark w-100 mt-3">
+                        코인시세 전체보기 →
+                    </a>
                 </div>
-                <a href="/priceCoin" class="btn btn-dark mt-3">코인시세 보러가기 →</a>
             </div>
-
         </div>
-    </div>
+    </section>
 
     <!-- 최신 채팅 -->
-    <h2 class="mt-5 mb-4">💬 최신 채팅</h2>
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">💬 실시간 채팅</h2>
+            <a href="/chat" class="btn btn-sm btn-dark">채팅방 입장 →</a>
+        </div>
 
-    <div class="list-group">
-        <th:block th:each="chat : ${latestChat}">
-            <div class="list-group-item">
-                <strong th:text="${chat.sender}"></strong>:
-                <span th:text="${chat.message}"></span>
-            </div>
-        </th:block>
+        <div class="chat-box">
+            <th:block th:each="chat : ${latestChat}">
+                <div class="chat-item">
+                    <strong class="chat-sender" th:text="${chat.sender}"></strong>
+                    <span class="chat-message" th:text="${chat.message}"></span>
+                </div>
+            </th:block>
 
-        <th:block th:if="${#lists.isEmpty(latestChat)}">
-            <div class="list-group-item text-muted">아직 채팅이 없습니다.</div>
-        </th:block>
-    </div>
-
-    <a href="/chat" class="btn btn-dark mt-3">채팅방으로 가기 →</a>
-
+            <th:block th:if="${#lists.isEmpty(latestChat)}">
+                <div class="chat-empty">
+                    <p>💭 아직 채팅이 없습니다. 첫 메시지를 남겨보세요!</p>
+                </div>
+            </th:block>
+        </div>
+    </section>
 
 </main>
 
 <!-- Footer -->
-<footer class="bg-dark text-light text-center py-3 mt-auto">
-    <p class="mb-0">© 2025 StockCoin Project</p>
+<footer class="bg-dark text-light text-center py-4 mt-auto">
+    <div class="container">
+        <p class="mb-2">© 2025 StockCoin Project</p>
+        <small class="text-muted">실시간 주식 · 코인 시세 플랫폼</small>
+    </div>
 </footer>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- 예시 차트 스크립트 -->
+<!-- 차트 스크립트 -->
 <script>
+    // 주식 차트
     const stockCtx = document.getElementById('stockChart');
     new Chart(stockCtx, {
         type: 'line',
         data: {
-            labels: ['10:00', '10:05', '10:10', '10:15'],
+            labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
             datasets: [{
                 label: '삼성전자',
-                data: [70000, 70500, 70200, 71000],
-                borderColor: 'red',
-                borderWidth: 2
+                data: [70000, 70500, 70200, 71000, 71500, 72000, 72300],
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
         }
     });
 
+    // 코인 차트
     const coinCtx = document.getElementById('coinChart');
     new Chart(coinCtx, {
         type: 'line',
         data: {
-            labels: ['10:00', '10:05', '10:10', '10:15'],
+            labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
             datasets: [{
                 label: 'BTC',
-                data: [9800, 10000, 9950, 10100],
-                borderColor: 'green',
-                borderWidth: 2
+                data: [95000, 95500, 96000, 95800, 96200, 96500, 96800],
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
         }
     });
 </script>

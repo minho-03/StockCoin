@@ -5,6 +5,25 @@ let allStocks = [];
 let originalStocks = [];
 let sortState = { column: null, order: "none" };
 let chartInstance = null;
+let userFavorites = new Set(); // 사용자의 관심종목 목록
+
+// ===============================
+// 0. 로그인 상태 및 관심종목 로드
+// ===============================
+async function checkLoginAndLoadFavorites() {
+  try {
+    const res = await axios.get("/api/favorites/type/STOCK");
+    userFavorites = new Set(res.data.map(f => f.symbol));
+  } catch (err) {
+    // 로그인 안 되어있으면 빈 Set으로 유지 (에러 무시)
+    if (err.response && err.response.status === 401) {
+      // 401은 정상 - 로그인 안 한 것뿐
+      userFavorites = new Set();
+    } else {
+      console.error("관심종목 로드 오류:", err);
+    }
+  }
+}
 
 // ===============================
 // 1. 국내 주식 데이터 로드
@@ -18,6 +37,9 @@ async function loadStockData() {
   table.style.display = "none";
 
   try {
+    // 관심종목 먼저 로드
+    await checkLoginAndLoadFavorites();
+
     const res = await axios.get("/api/korea/list");
     allStocks = res.data;
     originalStocks = [...allStocks];
@@ -51,30 +73,135 @@ function renderStockTable(data) {
         isDown ? "text-down" :
         "text-same";
 
-
       const rateIcon = isUp ? "▲ " : isDown ? "▼ " : "";
+
+      // 관심종목 여부에 따라 별 아이콘 변경
+      const isFavorite = userFavorites.has(stock.code);
+      const starIcon = isFavorite ? "⭐" : "☆";
 
       return `
         <tr data-code="${stock.code}" data-name="${stock.name}">
-          <td>⭐</td>
-          <td class="text-start ps-3">${stock.name}</td>
-          <td class="text-end pe-3">${stock.price}</td>
-          <td class="text-end pe-3 ${rateColor}">${rateIcon}${stock.changeRate}</td>
-          <td class="text-end pe-3">${stock.volume}</td>
+          <td class="favorite-star" data-code="${stock.code}" data-name="${stock.name}" style="cursor:pointer;">${starIcon}</td>
+          <td class="text-start ps-3 stock-name" style="cursor:pointer;">${stock.name}</td>
+          <td class="text-end pe-3 stock-data" style="cursor:pointer;">${stock.price}</td>
+          <td class="text-end pe-3 ${rateColor} stock-data" style="cursor:pointer;">${rateIcon}${stock.changeRate}</td>
+          <td class="text-end pe-3 stock-data" style="cursor:pointer;">${stock.volume}</td>
         </tr>
       `;
     })
     .join("");
 
+  // 이벤트 리스너 등록
+  attachEventListeners();
+}
+
+// ===============================
+// 3. 이벤트 리스너 등록
+// ===============================
+function attachEventListeners() {
+  // 별 아이콘 클릭 이벤트 (관심종목 추가/삭제)
+  document.querySelectorAll(".favorite-star").forEach((star) => {
+    star.addEventListener("click", async (e) => {
+      e.stopPropagation(); // 행 클릭 이벤트 막기
+      const code = star.dataset.code;
+      const name = star.dataset.name;
+      await toggleFavorite(code, name, star);
+    });
+  });
+
+  // 행 클릭 이벤트 (차트 모달)
   document.querySelectorAll("#stockTableBody tr").forEach((row) => {
-    row.addEventListener("click", () => {
-      showChartModal(row.dataset.name, row.dataset.code);
+    // 별 아이콘 제외한 나머지 셀들
+    row.querySelectorAll(".stock-name, .stock-data").forEach((cell) => {
+      cell.addEventListener("click", () => {
+        showChartModal(row.dataset.name, row.dataset.code);
+      });
     });
   });
 }
 
 // ===============================
-// 3. 정렬
+// 4. 관심종목 추가/삭제
+// ===============================
+async function toggleFavorite(code, name, starElement) {
+  const isFavorite = userFavorites.has(code);
+
+  try {
+    if (isFavorite) {
+      // 관심종목 삭제
+      await axios.delete(`/api/favorites?symbol=${code}&type=STOCK`);
+      userFavorites.delete(code);
+      starElement.textContent = "☆";
+      showToast(`${name}이(가) 관심종목에서 제거되었습니다.`, "success");
+    } else {
+      // 관심종목 추가
+      await axios.post("/api/favorites", {
+        symbol: code,
+        name: name,
+        type: "STOCK"
+      });
+      userFavorites.add(code);
+      starElement.textContent = "⭐";
+      showToast(`${name}이(가) 관심종목에 추가되었습니다.`, "success");
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 401) {
+      showToast("로그인이 필요합니다.", "warning");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
+    } else if (err.response && err.response.status === 409) {
+      showToast("이미 등록된 관심종목입니다.", "warning");
+    } else {
+      showToast("오류가 발생했습니다.", "danger");
+    }
+  }
+}
+
+// ===============================
+// 5. 토스트 알림
+// ===============================
+function showToast(message, type = "info") {
+  // 기존 토스트 제거
+  const existingToast = document.querySelector(".custom-toast");
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement("div");
+  toast.className = `custom-toast alert alert-${type}`;
+  toast.style.cssText = `
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 250px;
+    animation: slideIn 0.3s ease-out;
+  `;
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = "slideOut 0.3s ease-out";
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+// 토스트 애니메이션 CSS 추가
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// ===============================
+// 6. 정렬
 // ===============================
 document.addEventListener("click", (e) => {
   if (!e.target.classList.contains("sortable")) return;
@@ -107,7 +234,7 @@ document.addEventListener("click", (e) => {
 });
 
 // ===============================
-// 4. 검색 & 새로고침
+// 7. 검색 & 새로고침
 // ===============================
 document.getElementById("searchBtn").addEventListener("click", () => {
   const keyword = document.getElementById("searchInput").value.trim();
@@ -124,7 +251,7 @@ document.getElementById("searchBtn").addEventListener("click", () => {
 document.getElementById("refreshBtn").addEventListener("click", loadStockData);
 
 // ===============================
-// 5. 차트 모달
+// 8. 차트 모달
 // ===============================
 async function showChartModal(name, code) {
   const modalEl = document.getElementById("chartModal");
@@ -210,4 +337,3 @@ async function showChartModal(name, code) {
 // DOM 로드 시 실행
 // ===============================
 document.addEventListener("DOMContentLoaded", loadStockData);
-

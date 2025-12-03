@@ -2,124 +2,94 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>StockCoin - 채팅</title>
+    <title>StockCoin - 실시간 채팅</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        /* 전체 채팅 박스 */
-        #chatArea {
-          height: 450px;
-          overflow-y: auto;
-          background: #f8f9fa;
-          border-radius: 10px;
-          padding: 15px;
-          box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-        }
-
-        /* 기본 메시지 박스 */
-        .msg-box {
-          display: flex;
-          margin-bottom: 12px;
-          max-width: 85%;
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        /* 상대방 메시지 (왼쪽) */
-        .msg-left { justify-content: flex-start; }
-        .msg-left .bubble {
-          background: #e9ecef;
-          color: #333;
-          border-radius: 12px;
-          padding: 10px 14px;
-          max-width: 80%;
-        }
-
-        /* 내 메시지 (오른쪽) */
-        .msg-right { justify-content: flex-end; margin-left: auto; }
-        .msg-right .bubble {
-          background: #0d6efd;
-          color: white;
-          border-radius: 12px;
-          padding: 10px 14px;
-          max-width: 80%;
-        }
-
-        /* 닉네임 */
-        .sender {
-          font-size: 0.85rem;
-          font-weight: bold;
-          margin-bottom: 3px;
-        }
-
-        /* 시간 */
-        .timestamp {
-          font-size: 0.75rem;
-          margin-top: 3px;
-          opacity: 0.7;
-          text-align: right;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 입력창 둥글게 커스텀 */
-        #messageInput {
-          border-radius: 20px 0 0 20px;
-          padding-left: 15px;
-        }
-
-        #sendBtn {
-          border-radius: 0 20px 20px 0;
-        }
-    </style>
+    <link href="/css/chat.css" rel="stylesheet">
 </head>
+
 <body class="d-flex flex-column min-vh-100">
+
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/">📈 StockCoin</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
-                <li class="nav-item"><a class="nav-link" href="/priceStock">시세보기</a></li>
-                <li class="nav-item"><a class="nav-link" href="/favorites">관심종목</a></li>
-                <li class="nav-item"><a class="nav-link active" href="/chat">채팅</a></li>
-                <li class="nav-item"><a class="nav-link" href="/signup">회원가입</a></li>
-                <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
-            </ul>
+<th:block th:replace="fragments/navbar :: navbar"></th:block>
+
+<!-- Page Header (파란색 테마) -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">💬 실시간 채팅</h1>
+        <p class="page-subtitle">자유롭게 이야기를 나눠보세요</p>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="flex-fill container my-5">
+
+    <!-- 채팅 컨테이너 -->
+    <div class="chat-container">
+
+        <!-- 온라인 사용자 (선택 사항 - 필요하면 활성화) -->
+        <!--
+        <div class="online-users">
+            <h6>🟢 온라인 사용자 (3명)</h6>
+            <span class="user-badge">홍길동</span>
+            <span class="user-badge">김철수</span>
+            <span class="user-badge">나</span>
+        </div>
+        -->
+
+        <!-- 채팅 영역 -->
+        <div id="chatArea">
+            <!-- 예시 메시지 (JS로 동적 생성됨) -->
+            <!--
+            <div class="msg-box msg-left">
+                <div>
+                    <div class="sender">홍길동</div>
+                    <div class="bubble">
+                        안녕하세요! 주식 시세 확인했어요?
+                    </div>
+                    <div class="timestamp">오후 2:30</div>
+                </div>
+            </div>
+
+            <div class="msg-box msg-right">
+                <div>
+                    <div class="bubble">
+                        네! 삼성전자 올랐네요 👍
+                    </div>
+                    <div class="timestamp">오후 2:31</div>
+                </div>
+            </div>
+            -->
+        </div>
+
+        <!-- 입력창 -->
+        <div class="input-group" id="chatInputGroup">
+            <input id="messageInput"
+                   type="text"
+                   class="form-control"
+                   placeholder="메시지를 입력하세요..."
+                   autocomplete="off">
+            <button id="sendBtn" class="btn btn-primary">
+                📤 전송
+            </button>
         </div>
     </div>
-</nav>
 
-<!-- Main -->
-<main class="flex-fill container my-5">
-    <h2 class="mb-4">💬 전체 채팅방</h2>
-
-    <div id="chatArea"></div>
-
-    <!-- 입력창 -->
-    <div class="input-group mt-3">
-        <input id="messageInput" type="text" class="form-control" placeholder="메시지를 입력하세요...">
-        <button id="sendBtn" class="btn btn-primary">전송</button>
-    </div>
 </main>
 
 <!-- Footer -->
-<footer class="bg-dark text-light text-center py-3 mt-auto">
-    <p class="mb-0">© 2025 StockCoin Project</p>
+<footer class="bg-dark text-light text-center py-4 mt-auto">
+    <div class="container">
+        <p class="mb-2">© 2025 StockCoin Project</p>
+        <small class="text-muted">실시간 주식 · 코인 시세 플랫폼</small>
+    </div>
 </footer>
 
 <!-- WebSocket -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script src="/js/Chat.js"></script>
+
 </body>
 </html>

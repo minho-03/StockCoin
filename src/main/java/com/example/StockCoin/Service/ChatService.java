@@ -32,6 +32,9 @@ public class ChatService {
     public List<ChatMessageEntity> findAll() {
         return chatRepository.findAll();
     }
+    public List<ChatMessageEntity> findLatest3() {
+        return chatRepository.findTop3ByOrderByIdDesc();
+    }
 
     // 현재 시각 문자열
     private String now() {

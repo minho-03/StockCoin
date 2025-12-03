@@ -1,39 +1,285 @@
-/* 코인 페이지 전용 스타일 */
+/* ===============================
+   🪙 StockCoin - 코인 시세 페이지
+   테이블은 유지하고 주변 UI만 Home 스타일 적용
+   =============================== */
 
-/* 차트 모달 크기 조정 */
+/* CSS 변수 (코인은 초록색 테마) */
+:root {
+  --coin-gradient: linear-gradient(135deg, #198754 0%, #20c997 100%);
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+  --color-coin: #198754;
+  --color-dark: #2d3748;
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --radius-card: 16px;
+  --transition: all 0.3s ease;
+}
+
+/* 전체 배경 */
+body {
+  background: var(--bg-gradient);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===============================
+   Page Header (초록색 그라데이션)
+   =============================== */
+.page-header {
+  background: var(--coin-gradient);
+  color: white;
+  padding: 50px 20px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.page-subtitle {
+  font-size: 1.15rem;
+  opacity: 0.95;
+  margin-bottom: 0;
+  font-weight: 400;
+}
+
+/* ===============================
+   탭 네비게이션
+   =============================== */
+.nav-tabs {
+  border: none;
+  background: white;
+  border-radius: var(--radius-card);
+  padding: 8px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 30px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.nav-tabs .nav-item {
+  flex: 1;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  transition: var(--transition);
+  text-align: center;
+  padding: 12px 20px;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--color-coin);
+  background: rgba(25, 135, 84, 0.1);
+}
+
+.nav-tabs .nav-link.active {
+  background: var(--coin-gradient);
+  color: white !important;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===============================
+   검색 & 컨트롤 영역
+   =============================== */
+.input-group {
+  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+
+.input-group .form-control {
+  border: 2px solid #e9ecef;
+  border-right: none;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  background: white;
+}
+
+.input-group .form-control:focus {
+  border-color: var(--color-coin);
+  box-shadow: none;
+  z-index: 3;
+  background: white;
+}
+
+.input-group .btn {
+  border-radius: 0 12px 12px 0 !important;
+  padding: 12px 24px;
+  font-weight: 600;
+  background: var(--coin-gradient);
+  border: none;
+  color: white;
+  transition: var(--transition);
+}
+
+.input-group .btn:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+#refreshBtn {
+  border-radius: 12px !important;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  background: white;
+  border: 2px solid #dee2e6;
+}
+
+#refreshBtn:hover {
+  background: var(--coin-gradient);
+  color: white !important;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+#updateTime {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 8px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ===============================
+   테이블 컨테이너 (기존 유지하되 그림자만 추가)
+   =============================== */
+#coinTable {
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ===============================
+   로딩 스피너
+   =============================== */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background: white;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.spinner-border {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 4px;
+  color: var(--color-coin) !important;
+}
+
+/* ===============================
+   모달 (차트 팝업)
+   =============================== */
+.modal-content {
+  border: none;
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  background: var(--coin-gradient);
+  border: none;
+  padding: 20px 25px;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: white;
+}
+
+.modal-body {
+  padding: 25px;
+  background: #f8f9fa;
+}
+
+#chartContainer {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 차트 크기 */
 #coinChart {
   width: 100% !important;
   height: 360px !important;
 }
+
 .modal-lg {
   max-width: 850px;
 }
 
-/* 변동률 컬러 */
-.text-danger { color: #d9534f !important; } /* 상승 */
-.text-primary { color: #0275d8 !important; } /* 하락 */
-
-/* 헤더 정렬 표시 */
-th.sortable:hover {
-  background-color: #343a40;
-}
-th.sorted.asc::after {
-  content: " ▲";
-  color: #aaa;
-}
-th.sorted.desc::after {
-  content: " ▼";
-  color: #aaa;
-}
-#usaTable td.text-up {
-  color: #d93025 !important;
+/* ===============================
+   Footer
+   =============================== */
+footer {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: #fff;
+  margin-top: auto;
 }
 
-#usaTable td.text-down {
-  color: #0070c9 !important;
+/* ===============================
+   반응형 (모바일)
+   =============================== */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 35px 15px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+  }
+
+  .nav-tabs .nav-link {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  #refreshBtn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+
+  .input-group {
+    max-width: 100%;
+  }
 }
 
-#usaTable td.text-same {
-  color: #6c757d !important;
+/* ===============================
+   애니메이션
+   =============================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-

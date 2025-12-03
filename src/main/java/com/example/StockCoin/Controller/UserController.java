@@ -8,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 public class UserController {
@@ -66,5 +69,24 @@ public class UserController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    @GetMapping("/user/current")
+    @ResponseBody
+    public Map<String, String> getCurrentUser(HttpSession session) {
+        Map<String, String> result = new HashMap<>();
+
+        User loginUser = (User) session.getAttribute("loginUser");
+
+        if (loginUser != null) {
+            result.put("nickname", loginUser.getNickname());
+            result.put("username", loginUser.getUsername());
+        } else {
+            // 로그인 안 했을 때는 익명 반환
+            result.put("nickname", "익명");
+            result.put("username", "anonymous");
+        }
+
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.StockCoin.Config;
 
+import com.example.StockCoin.Entity.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.server.ServerHttpRequest;
@@ -25,7 +26,17 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             HttpSession session = servlet.getServletRequest().getSession(false);
 
             if (session != null) {
-                attributes.put("loginUser", session.getAttribute("loginUser"));
+                User loginUser = (User) session.getAttribute("loginUser");
+
+                // 🔒 로그인하지 않은 사용자는 WebSocket 연결 차단
+                if (loginUser == null) {
+                    return false;
+                }
+
+                attributes.put("loginUser", loginUser);
+            } else {
+                // 세션이 없으면 차단
+                return false;
             }
         }
         return true;

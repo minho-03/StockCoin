@@ -19,18 +19,21 @@ public class ChatController {
     @MessageMapping("/chat.send")
     public void send(ChatMessage message, SimpMessageHeaderAccessor headerAccessor) {
 
-        // Interceptor 에서 저장한 로그인 사용자 정보 가져오기
+        // Interceptor에서 저장한 로그인 사용자 정보 가져오기
         User loginUser = (User) headerAccessor.getSessionAttributes().get("loginUser");
 
-        if (loginUser != null)
-            message.setSender(loginUser.getNickname());
-        else
-            message.setSender("익명");
+        // 로그인 안 했으면 메시지 무시
+        if (loginUser == null) {
+            return;
+        }
+
+        // 발신자 = 로그인 닉네임
+        message.setSender(loginUser.getNickname());
 
         // 1) DB 저장
         chatService.save(message);
 
-        // 2) 실시간 채팅방에 전송
+        // 2) 모든 구독자에게 전송
         messagingTemplate.convertAndSend("/topic/chat", message);
     }
 }
