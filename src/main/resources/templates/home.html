@@ -35,39 +35,51 @@
         </div>
 
         <div class="row g-4">
+            <!-- 삼성전자 -->
             <div class="col-md-3 col-sm-6">
-                <div class="price-card card-up">
+                <div class="price-card" th:classappend="${samsung != null && #strings.contains(samsung.changeRate, '-')} ? 'card-down' : 'card-up'">
                     <div class="card-icon">📊</div>
                     <h5 class="card-name">삼성전자</h5>
-                    <p class="card-price">72,300원</p>
-                    <small class="card-change text-up">▲ +0.8%</small>
+                    <p class="card-price" th:text="${samsung != null ? samsung.price + '원' : '-'}">-</p>
+                    <small class="card-change"
+                           th:classappend="${samsung != null && #strings.contains(samsung.changeRate, '-')} ? 'text-down' : 'text-up'"
+                           th:text="${samsung != null ? (samsung.changeRate.startsWith('-') ? '▼ ' : '▲ ') + samsung.changeRate : '-'}">-</small>
                 </div>
             </div>
 
+            <!-- 현대차 -->
             <div class="col-md-3 col-sm-6">
-                <div class="price-card card-up">
+                <div class="price-card" th:classappend="${hyundai != null && #strings.contains(hyundai.changeRate, '-')} ? 'card-down' : 'card-up'">
                     <div class="card-icon">🚗</div>
                     <h5 class="card-name">현대차</h5>
-                    <p class="card-price">184,000원</p>
-                    <small class="card-change text-up">▲ +1.3%</small>
+                    <p class="card-price" th:text="${hyundai != null ? hyundai.price + '원' : '-'}">-</p>
+                    <small class="card-change"
+                           th:classappend="${hyundai != null && #strings.contains(hyundai.changeRate, '-')} ? 'text-down' : 'text-up'"
+                           th:text="${hyundai != null ? (hyundai.changeRate.startsWith('-') ? '▼ ' : '▲ ') + hyundai.changeRate : '-'}">-</small>
                 </div>
             </div>
 
+            <!-- 비트코인 -->
             <div class="col-md-3 col-sm-6">
-                <div class="price-card card-up">
+                <div class="price-card" th:classappend="${bitcoin != null && #strings.contains(bitcoin.changeRate, '-')} ? 'card-down' : 'card-up'">
                     <div class="card-icon">₿</div>
                     <h5 class="card-name">비트코인</h5>
-                    <p class="card-price">96,500,000원</p>
-                    <small class="card-change text-up">▲ +2.1%</small>
+                    <p class="card-price" th:text="${bitcoin != null ? bitcoin.price + '원' : '-'}">-</p>
+                    <small class="card-change"
+                           th:classappend="${bitcoin != null && #strings.contains(bitcoin.changeRate, '-')} ? 'text-down' : 'text-up'"
+                           th:text="${bitcoin != null ? (bitcoin.changeRate.startsWith('-') ? '▼ ' : '▲ ') + bitcoin.changeRate : '-'}">-</small>
                 </div>
             </div>
 
+            <!-- 이더리움 -->
             <div class="col-md-3 col-sm-6">
-                <div class="price-card card-down">
+                <div class="price-card" th:classappend="${ethereum != null && #strings.contains(ethereum.changeRate, '-')} ? 'card-down' : 'card-up'">
                     <div class="card-icon">Ξ</div>
                     <h5 class="card-name">이더리움</h5>
-                    <p class="card-price">5,200,000원</p>
-                    <small class="card-change text-down">▼ -0.5%</small>
+                    <p class="card-price" th:text="${ethereum != null ? ethereum.price + '원' : '-'}">-</p>
+                    <small class="card-change"
+                           th:classappend="${ethereum != null && #strings.contains(ethereum.changeRate, '-')} ? 'text-down' : 'text-up'"
+                           th:text="${ethereum != null ? (ethereum.changeRate.startsWith('-') ? '▼ ' : '▲ ') + ethereum.changeRate : '-'}">-</small>
                 </div>
             </div>
         </div>
@@ -149,78 +161,204 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- 차트 스크립트 -->
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 서버에서 전달받은 데이터
+    const stockChartData = /*[[${stockChartData}]]*/ null;
+    const coinChartData = /*[[${coinChartData}]]*/ null;
+
     // 주식 차트
     const stockCtx = document.getElementById('stockChart');
-    new Chart(stockCtx, {
-        type: 'line',
-        data: {
-            labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
-            datasets: [{
-                label: '삼성전자',
-                data: [70000, 70500, 70200, 71000, 71500, 72000, 72300],
-                borderColor: '#dc3545',
-                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: true, position: 'top' }
+    if (stockChartData && stockChartData.labels && stockChartData.prices) {
+        new Chart(stockCtx, {
+            type: 'line',
+            data: {
+                labels: stockChartData.labels.slice(-7), // 최근 7개
+                datasets: [{
+                    label: '삼성전자',
+                    data: stockChartData.prices.slice(-7),
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#dc3545',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 14, weight: 'bold' },
+                            color: '#2d3748'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        cornerRadius: 8
+                    }
                 },
-                x: {
-                    grid: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { size: 12 },
+                            color: '#6c757d'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 12 },
+                            color: '#6c757d'
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    } else {
+        // 데이터가 없을 때 기본 차트
+        new Chart(stockCtx, {
+            type: 'line',
+            data: {
+                labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
+                datasets: [{
+                    label: '삼성전자',
+                    data: [70000, 70500, 70200, 71000, 71500, 72000, 72300],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#dc3545',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
 
     // 코인 차트
     const coinCtx = document.getElementById('coinChart');
-    new Chart(coinCtx, {
-        type: 'line',
-        data: {
-            labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
-            datasets: [{
-                label: 'BTC',
-                data: [95000, 95500, 96000, 95800, 96200, 96500, 96800],
-                borderColor: '#198754',
-                backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: true, position: 'top' }
+    if (coinChartData && coinChartData.labels && coinChartData.prices) {
+        new Chart(coinCtx, {
+            type: 'line',
+            data: {
+                labels: coinChartData.labels,
+                datasets: [{
+                    label: 'BTC',
+                    data: coinChartData.prices,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#198754',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: { color: 'rgba(0,0,0,0.05)' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 14, weight: 'bold' },
+                            color: '#2d3748'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        cornerRadius: 8
+                    }
                 },
-                x: {
-                    grid: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { size: 12 },
+                            color: '#6c757d'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 12 },
+                            color: '#6c757d'
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    } else {
+        // 데이터가 없을 때 기본 차트
+        new Chart(coinCtx, {
+            type: 'line',
+            data: {
+                labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
+                datasets: [{
+                    label: 'BTC',
+                    data: [95000, 95500, 96000, 95800, 96200, 96500, 96800],
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#198754',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+    /*]]>*/
 </script>
 
 <!-- Bootstrap JS -->
